@@ -5,12 +5,45 @@
       <h2 class="fw-bold mb-0">
         <i class="bi bi-box-seam-fill text-warning me-2"></i>Gestión de Productos
       </h2>
-      <button class="btn btn-warning fw-semibold" @click="abrirModalCrear">
+      <button class="btn btn-warning fw-semibold text-white shadow-sm" @click="abrirModalCrear">
         <i class="bi bi-plus-circle-fill me-1"></i>Nuevo Producto
       </button>
     </div>
 
     <AlertaMensaje ref="alerta" :tipo="alertaTipo" :mensaje="alertaMensaje" />
+
+    <ul class="nav nav-tabs mb-4 border-bottom" id="productTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link fw-semibold px-3" 
+          :class="{ active: categoriaActiva === 'Recomendado' }"
+          @click="categoriaActiva = 'Recomendado'"
+          type="button"
+        >
+          <i class="bi bi-star-fill me-1 text-warning"></i> Recomendado
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link fw-semibold px-3" 
+          :class="{ active: categoriaActiva === 'Bebidas' }"
+          @click="categoriaActiva = 'Bebidas'"
+          type="button"
+        >
+          <i class="bi bi-cup-hot-fill me-1"></i> Bebidas
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button 
+          class="nav-link fw-semibold px-3" 
+          :class="{ active: categoriaActiva === 'Alimentos' }"
+          @click="categoriaActiva = 'Alimentos'"
+          type="button"
+        >
+          <i class="bi bi-egg-fried me-1"></i> Alimentos
+        </button>
+      </li>
+    </ul>
 
     <div v-if="cargando" class="text-center py-5">
       <div class="spinner-border text-warning" role="status"></div>
@@ -18,28 +51,29 @@
     </div>
 
     <div v-else>
-      <div v-if="productos.length === 0" class="text-center py-5 text-muted">
-        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
-        <p>No hay productos registrados aún.</p>
+      <div v-if="productosFiltrados.length === 0" class="text-center py-5 text-muted bg-light rounded-3 shadow-sm border border-dashed">
+        <i class="bi bi-inbox fs-1 d-block mb-3 text-secondary"></i>
+        <p class="mb-1 fw-medium">No hay productos registrados en esta sección.</p>
+        <p class="small text-muted">Asegúrate de asignar la categoría correspondiente al crear o editar.</p>
       </div>
 
-      <div class="row g-3">
-        <div v-for="producto in productos" :key="producto.id"
+      <div v-else class="row g-3">
+        <div v-for="producto in productosFiltrados" :key="producto.id"
           class="col-12 col-sm-6 col-md-4 col-lg-3">
           <div class="card h-100 shadow-sm producto-card">
             <img :src="producto.avatar || 'https://placehold.co/300x180?text=Sin+imagen'"
               class="card-img-top producto-img" :alt="producto.name" />
             <div class="card-body d-flex flex-column">
-              <span class="badge bg-warning text-dark mb-2 align-self-start">
+              <span class="badge bg-warning text-dark mb-2 align-self-start fw-bold">
                 <i class="bi bi-tag-fill me-1"></i>{{ producto.category || 'Sin categoría' }}
               </span>
-              <h6 class="card-title fw-bold">{{ producto.name }}</h6>
+              <h6 class="card-title fw-bold text-dark mb-1">{{ producto.name }}</h6>
               <p class="card-text text-muted small flex-grow-1">{{ producto.description }}</p>
-              <p class="fw-bold text-success mt-2 mb-3">
+              <p class="fw-bold text-success mt-2 mb-3 fs-5">
                 <i class="bi bi-currency-dollar"></i>{{ formatearPrecio(producto.price) }}
               </p>
               <div class="d-flex gap-2">
-                <button class="btn btn-outline-primary btn-sm flex-grow-1"
+                <button class="btn btn-outline-primary btn-sm flex-grow-1 fw-semibold"
                   @click="abrirModalEditar(producto)">
                   <i class="bi bi-pencil-fill me-1"></i>Editar
                 </button>
@@ -58,7 +92,7 @@
       <div class="modal-dialog modal-lg">
         <div class="modal-content">
           <div class="modal-header bg-warning">
-            <h5 class="modal-title fw-bold">
+            <h5 class="modal-title fw-bold text-dark">
               <i class="bi bi-plus-circle-fill me-2"></i>Crear Producto
             </h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -69,26 +103,31 @@
             </div>
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Nombre del producto</label>
+                <label class="form-label fw-medium">Nombre del producto</label>
                 <input v-model="form.name" type="text" class="form-control" placeholder="Ej: Cappuccino" />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Categoría</label>
-                <input v-model="form.category" type="text" class="form-control" placeholder="Ej: Bebidas" />
+                <label class="form-label fw-medium">Categoría</label>
+                <select v-model="form.category" class="form-select">
+                  <option value="" disabled selected>Selecciona una categoría</option>
+                  <option value="Recomendado">Recomendado</option>
+                  <option value="Bebidas">Bebidas</option>
+                  <option value="Alimentos">Alimentos</option>
+                </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Precio</label>
+                <label class="form-label fw-medium">Precio</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
                   <input v-model="form.price" type="number" min="0" class="form-control" placeholder="0.00" />
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label">URL Imagen (avatar)</label>
+                <label class="form-label fw-medium">URL Imagen (avatar)</label>
                 <input v-model="form.avatar" type="url" class="form-control" placeholder="https://..." />
               </div>
               <div class="col-12">
-                <label class="form-label">Descripción</label>
+                <label class="form-label fw-medium">Descripción</label>
                 <textarea v-model="form.description" class="form-control" rows="3"
                   placeholder="Describe el producto..."></textarea>
               </div>
@@ -98,7 +137,7 @@
             <button class="btn btn-secondary" data-bs-dismiss="modal">
               <i class="bi bi-x-circle me-1"></i>Cancelar
             </button>
-            <button class="btn btn-warning fw-semibold" @click="crearProducto" :disabled="guardando">
+            <button class="btn btn-warning fw-semibold text-white shadow-sm" @click="crearProducto" :disabled="guardando">
               <span v-if="guardando"><span class="spinner-border spinner-border-sm me-1"></span>Guardando...</span>
               <span v-else><i class="bi bi-floppy-fill me-1"></i>Guardar</span>
             </button>
@@ -122,26 +161,30 @@
             </div>
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Nombre del producto</label>
+                <label class="form-label fw-medium">Nombre del producto</label>
                 <input v-model="form.name" type="text" class="form-control" />
               </div>
               <div class="col-md-6">
-                <label class="form-label">Categoría</label>
-                <input v-model="form.category" type="text" class="form-control" />
+                <label class="form-label fw-medium">Categoría</label>
+                <select v-model="form.category" class="form-select">
+                  <option value="Recomendado">Recomendado</option>
+                  <option value="Bebidas">Bebidas</option>
+                  <option value="Alimentos">Alimentos</option>
+                </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Precio</label>
+                <label class="form-label fw-medium">Precio</label>
                 <div class="input-group">
                   <span class="input-group-text"><i class="bi bi-currency-dollar"></i></span>
                   <input v-model="form.price" type="number" min="0" class="form-control" />
                 </div>
               </div>
               <div class="col-md-6">
-                <label class="form-label">URL Imagen (avatar)</label>
+                <label class="form-label fw-medium">URL Imagen (avatar)</label>
                 <input v-model="form.avatar" type="url" class="form-control" />
               </div>
               <div class="col-12">
-                <label class="form-label">Descripción</label>
+                <label class="form-label fw-medium">Descripción</label>
                 <textarea v-model="form.description" class="form-control" rows="3"></textarea>
               </div>
             </div>
@@ -150,7 +193,7 @@
             <button class="btn btn-secondary" data-bs-dismiss="modal">
               <i class="bi bi-x-circle me-1"></i>Cancelar
             </button>
-            <button class="btn btn-primary fw-semibold" @click="actualizarProducto" :disabled="guardando">
+            <button class="btn btn-primary fw-semibold shadow-sm" @click="actualizarProducto" :disabled="guardando">
               <span v-if="guardando"><span class="spinner-border spinner-border-sm me-1"></span>Actualizando...</span>
               <span v-else><i class="bi bi-floppy-fill me-1"></i>Actualizar</span>
             </button>
@@ -171,7 +214,7 @@
           <div class="modal-body text-center">
             <i class="bi bi-box-x-fill text-danger" style="font-size: 2.5rem;"></i>
             <p class="mt-3 mb-1">¿Eliminar el producto:</p>
-            <p class="fw-bold">{{ productoSeleccionado?.name }}</p>
+            <p class="fw-bold text-dark">{{ productoSeleccionado?.name }}</p>
             <p class="text-muted small">Esta acción no se puede deshacer.</p>
           </div>
           <div class="modal-footer justify-content-center">
@@ -194,9 +237,6 @@
 import { Modal } from 'bootstrap'
 import productosService from '../services/productosService.js'
 import AlertaMensaje from '../components/AlertaMensaje.vue'
-
-// 🌟 IMPORTANTE: Importamos el archivo de datos JSON locales
-// (Verifica que la ruta coincida con el lugar exacto donde creaste el archivo)
 import misProductosNuevos from '../assets/productosIniciales.json'
 
 export default {
@@ -205,6 +245,7 @@ export default {
   data() {
     return {
       productos: [],
+      categoriaActiva: 'Bebidas', // 🌟 Cambiado a Bebidas temporalmente para que veas tus datos de inmediato
       cargando: false,
       guardando: false,
       errorModal: '',
@@ -215,6 +256,26 @@ export default {
       bsModalCrear: null,
       bsModalEditar: null,
       bsModalEliminar: null
+    }
+  },
+  computed: {
+    // 🌟 OPTIMIZADO: Filtro flexible que acepta variaciones de nombres de MockAPI (Singular/Plural)
+    productosFiltrados() {
+      return this.productos.filter(producto => {
+        const cat = (producto.category || '').toLowerCase().trim();
+        
+        if (this.categoriaActiva === 'Bebidas') {
+          return cat === 'bebidas' || cat === 'bebida';
+        }
+        if (this.categoriaActiva === 'Alimentos') {
+          // Si es alimentos, muestra los marcados como alimentos o cualquier remanente (ej. industrial)
+          return cat === 'alimentos' || cat === 'alimento' || cat === 'industrial' || cat === 'comida';
+        }
+        if (this.categoriaActiva === 'Recomendado') {
+          return cat === 'recomendado' || cat === 'recomendados' || cat === 'favorito';
+        }
+        return false;
+      });
     }
   },
   mounted() {
@@ -228,8 +289,6 @@ export default {
       this.cargando = true
       try {
         const res = await productosService.getAll()
-        
-        // Si MockAPI está vacío, inyectamos los datos desde el archivo JSON
         if (res.data.length === 0) {
           await this.cargarDatosIniciales()
         } else {
@@ -243,12 +302,9 @@ export default {
     },
     async cargarDatosIniciales() {
       try {
-        // Recorremos la lista que viene directamente del archivo JSON importado
         for (let p of misProductosNuevos) {
           await productosService.create(p)
         }
-        
-        // Volvemos a consultar MockAPI para sincronizar el estado local con los IDs reales
         const resFinal = await productosService.getAll()
         this.productos = resFinal.data
       } catch (error) {
@@ -266,7 +322,7 @@ export default {
         price: producto.price,
         description: producto.description, 
         avatar: producto.avatar, 
-        category: producto.category 
+        category: producto.category || 'Bebidas'
       }
       this.errorModal = ''
       this.bsModalEditar.show()
@@ -317,8 +373,8 @@ export default {
       }
     },
     validarForm() {
-      if (!this.form.name || !this.form.price) {
-        this.errorModal = 'El nombre y el precio son obligatorios.'
+      if (!this.form.name || !this.form.price || !this.form.category) {
+        this.errorModal = 'El nombre, precio y la categoría son obligatorios.'
         return false
       }
       this.errorModal = ''
@@ -330,7 +386,7 @@ export default {
       this.$refs.alerta.mostrar()
     },
     limpiarForm() {
-      this.form = { name: '', price: '', description: '', avatar: '', category: '' }
+      this.form = { name: '', price: '', description: '', avatar: '', category: 'Bebidas' }
       this.errorModal = ''
     },
     formatearPrecio(precio) {
@@ -342,16 +398,48 @@ export default {
 </script>
 
 <style scoped>
+.nav-tabs {
+  border-bottom: 2px solid #e2e8f0 !important;
+}
+
+.nav-tabs .nav-link {
+  color: #64748b;
+  border: none;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  padding: 0.75rem 1.25rem;
+  transition: all 0.25s ease;
+}
+
+.nav-tabs .nav-link:hover {
+  color: #ffb703;
+  border-bottom-color: #cbd5e1;
+}
+
+.nav-tabs .nav-link.active {
+  color: #fb8500 !important;
+  font-weight: 600;
+  border-bottom-color: #ffb703 !important;
+  background: transparent;
+}
+
+.border-dashed {
+  border-style: dashed !important;
+  background-color: #f8fafc;
+}
+
 .producto-card {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   border: none;
   border-radius: 12px;
   overflow: hidden;
 }
+
 .producto-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
 }
+
 .producto-img {
   height: 160px;
   object-fit: cover;
