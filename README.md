@@ -4,9 +4,9 @@ Proyecto desarrollado para el **Examen Final de Desarrollo de Aplicaciones Web y
 *Universidad Francisco de Paula Santander Seccional Ocaña — UFPSO 2026*
 
 **Integrantes del Grupo:**
-* 👤 **David Andreidy Coronel Coronel** - 019610
-* 👤 **Yaneidy Sepúlveda Sepúlveda** - 019256
-* 👤 **Yesica Paola Bayona Moreno** - 019265
+* 👤 **David Andreidy Coronel Coronel** - 0192610
+* 👤 **Yaneidy Sepúlveda Sepúlveda** - 0192568
+* 👤 **Yesica Paola Bayona Moreno** - 0192625
 
 ---
 
